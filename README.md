@@ -15,7 +15,7 @@ These files have been tested and used to generate a live ELK deployment on Azure
   remote_user: sysadmin
   become: true
   tasks:
-    # Use apt module
+  # Use apt module
     - name: Install docker.io
       apt:
         update_cache: yes
