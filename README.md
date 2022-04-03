@@ -8,7 +8,58 @@ These files have been tested and used to generate a live ELK deployment on Azure
 
 [install-elk.yml](Ansible/install-elk.yml)
   
+```
+---
+# install_elk.yml
+- name: Configure Elk VM with Docker
+  hosts: elk
+  remote_user: sysadmin
+  become: true
+  tasks:
+    # Use apt module
+    - name: Install docker.io
+      apt:
+        update_cache: yes
+        name: docker.io
+        state: present
 
+      # Use apt module
+    - name: Install pip3
+      apt:
+        force_apt_get: yes
+        name: python3-pip
+        state: present
+
+      # Use pip module
+    - name: Install Docker python module
+      pip:
+        name: docker
+        state: present
+
+      # Use command module
+    - name: Increase virtual memory
+      command: sysctl -w vm.max_map_count=262144
+
+      # Use sysctl module
+    - name: Use more memory
+      sysctl:
+        name: vm.max_map_count
+        value: "262144"
+        state: present
+        reload: yes
+
+      # Use docker_container module
+    - name: download and launch a docker elk container
+      docker_container:
+        name: elk
+        image: sebp/elk:761
+        state: started
+        restart_policy: always
+        published_ports:
+          - 5601:5601
+          - 9200:9200
+          - 5044:5044
+```
 This document contains the following details:
 1. Description of the Topology
 2. Access Policies
@@ -99,9 +150,83 @@ These Beats allow us to collect the following information from each machine:
 In order to use the playbook, you will need to have an Ansible control node already configured. Assuming you have such a control node provisioned: 
 
 SSH into the control node and follow the steps below:
-- Copy the playbook file to Ansible Control Node. Playbooks for Filebeat and Metricbeat are also here: [filebeat](Ansible/filebeat-playbook.yml) and [metricbeat](Ansible/metricbeat-playbook.yml)
+- Copy the playbook file to Ansible Control Node. Playbooks for Filebeat and Metricbeat are also here: [filebeat](Ansible/filebeat-playbook.yml) 
+
+```
+---
+- name: installing and launching filebeat
+  hosts: elk
+  become: yes
+  tasks:
+
+  - name: download filebeat deb
+    command: curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.4.0-amd64.deb
+
+  - name: install filebeat deb
+    command: dpkg -i filebeat-7.4.0-amd64.deb
+
+  - name: drop in filebeat.yml
+    copy:
+      src: /etc/ansible/filebeat-config.yml
+      dest: /etc/filebeat/filebeat.yml
+
+  - name: enable and configure system module
+    command: filebeat modules enable system
+
+  - name: setup filebeat
+    command: filebeat setup
+
+  - name: start filebeat service
+    command: service filebeat start
+
+  - name: enable service filebeat on boot
+    systemd:
+      name: filebeat
+      enabled: yes
+```
+and [metricbeat](Ansible/metricbeat-playbook.yml)
+
+```
+---
+- name: Install metric beat
+  hosts: webservers
+  become: true
+  tasks:
+    # Use command module
+  - name: Download metricbeat
+    command: curl -L -O https://artifacts.elastic.co/downloads/beats/metricbeat/metricbeat-7.4.0-amd64.deb
+
+    # Use command module
+  - name: install metricbeat
+    command: dpkg -i metricbeat-7.4.0-amd64.deb
+
+    # Use copy module
+  - name: drop in metricbeat config
+    copy:
+      src: /etc/ansible/metricbeat-config.yml
+      dest: /etc/metricbeat/metricbeat.yml
+
+    # Use command module
+  - name: enable and configure docker module for metric beat
+    command: metricbeat modules enable docker
+
+    # Use command module
+  - name: setup metric beat
+    command: metricbeat setup
+
+
+    # Use command module
+  - name: start metric beat
+    command: service metricbeat start
+
+    # Use systemd module
+  - name: enable service metricbeat on boot
+    systemd:
+      name: metricbeat
+      enabled: yes
+```
 - Update the hosts file to include webservers and elk
-'''
+```
 $ cd /etc/ansible
 $ cat hosts
 [webservers]
@@ -110,7 +235,7 @@ $ cat hosts
 
 [elk]
 10.0.0.4
-'''
+```
 - Run the playbook, and navigate to Kibana (http://[Host IP]/app/kibana#/home) to check that the installation worked as expected.
 ```
 $ cd /etc/ansible
@@ -123,6 +248,5 @@ $ absible-playbook metricbeat-playbook.yml
  Ansible Control Node.
 - _Which file do you update to make Ansible run the playbook on a specific machine? How do I specify which machine to install the ELK server on versus which 
 to install Filebeat on? elk
-- _Which URL do you navigate to in order to check that the ELK server is running? (http://[Host IP]/app/kibana#/home)
+- _Which URL do you navigate to in order to check that the ELK server is running? '(http://[Host IP]/app/kibana#/home)'
 
-_As a **Bonus**, provide the specific commands the user will need to run to download the playbook, update the files, etc._
