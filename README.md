@@ -112,12 +112,12 @@ $ cat hosts
 10.0.0.4
 '''
 - Run the playbook, and navigate to Kibana (http://[Host IP]/app/kibana#/home) to check that the installation worked as expected.
-'''
+```
 $ cd /etc/ansible
 $ ansible-playbook install-elk.yml
 $ ansible-playbook filebeat-playbook.yml
 $ absible-playbook metricbeat-playbook.yml
-'''
+```
 
 - _Which file is the playbook? Where do you copy it? playbook files are: filebeat-playbook.yml  install-elk.yml  metricbeat-playbook.yml and copied in
  Ansible Control Node.
