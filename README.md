@@ -248,5 +248,5 @@ $ absible-playbook metricbeat-playbook.yml
  Ansible Control Node.
 - _Which file do you update to make Ansible run the playbook on a specific machine? How do I specify which machine to install the ELK server on versus which 
 to install Filebeat on? elk
-- _Which URL do you navigate to in order to check that the ELK server is running? '(http://[Host IP]/app/kibana#/home)'
+- _Which URL do you navigate to in order to check that the ELK server is running? `(http://[Host IP]/app/kibana#/home)`
 
